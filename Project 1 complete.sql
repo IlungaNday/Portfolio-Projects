@@ -121,7 +121,7 @@ SELECT industry
 FROM layoffs_staging2;
 -- I just confirmed that everything was updated properly. 
 --------------------------------------------------------------------------------------------
--- I just made a mistake i accidentally update all rows to be crypto
+-- I just made a mistake I accidentally updated all rows to be crypto
 -- I will creat a new table called layoffs_staging22
 -- And this is why we create new tables lol 
 
@@ -165,7 +165,7 @@ WHERE industry LIKE 'Crypto%';
 SELECT DISTINCT industry 
 FROM layoffs_staging22; 
 -- I have corrected my mistake. 
--- I forgot to add the where statement which would ensure that only the columns with crypto written differently would be update
+-- I forgot to add the where statement which would ensure that only the columns with crypto written differently would be updated
 
 SELECT DISTINCT location 
 FROM layoffs_staging22
@@ -185,7 +185,7 @@ WHERE location Like '%sseldorf';
 SELECT DISTINCT location
 From layoffs_staging22 
 ORDER BY 1;
--- it updated correct. However, i found an issue with the spelling of Florianopolis
+-- it updated correctly. However, I found an issue with the spelling of Florianopolis too
 
 SELECT DISTINCT location
 From layoffs_staging22 
@@ -223,7 +223,7 @@ WHERE country LIKE 'United States%';
 SELECT `date`
 FROM layoffs_staging22
 ;
--- COnverting our date column from string to date data type
+-- Converting our date column from string to date data type
 
 UPDATE layoffs_staging22 
 SET date = STR_TO_DATE(`date`, '%m/%d/%Y');
@@ -243,7 +243,7 @@ AND percentage_laid_off IS NULL;
 UPDATE layoffs_staging22
 SET industry = NULL 
 WHERE industry = '';
--- Setting everything to null to make it easier to populate them empty fields 
+-- Setting everything to null to make it easier to populate the empty fields 
 
 SELECT *
 FROM layoffs_staging22
@@ -263,6 +263,7 @@ JOIN layoffs_staging22 AS st2
     AND st1.location = st2.location 
 WHERE (st1.industry IS NULL OR st1.industry = '')
 AND st2.industry IS NOT NULL;
+-- This will self-join the table which will allow me to allign the data to the null data and it will make it possible for me to fill in the missing data.   
 
 UPDATE layoffs_staging22 st1
 JOIN layoffs_staging22 st2
@@ -270,7 +271,8 @@ JOIN layoffs_staging22 st2
 SET st1.industry = st2.industry 
 WHERE st1.industry IS NULL 
 AND st2.industry IS NOT NULL;
--- Now Airbnb industry has been populated with data
+-- Now Airbnb industry has been populated with data 
+-- because I took the data from st2.industry and i moved into the position of the null data of st1.industry
 
 -- 4. REMOVE ANY COLUMNS/ROWS OR IRRELEVANT DATA
 SELECT * 

@@ -121,7 +121,7 @@ SELECT industry
 FROM layoffs_staging2;
 -- I just confirmed that everything was updated properly. 
 --------------------------------------------------------------------------------------------
--- I just made a mistake I accidentally updated all rows to be crypto
+-- I just made a mistake i accidentally update all rows to be crypto
 -- I will creat a new table called layoffs_staging22
 -- And this is why we create new tables lol 
 
@@ -165,7 +165,7 @@ WHERE industry LIKE 'Crypto%';
 SELECT DISTINCT industry 
 FROM layoffs_staging22; 
 -- I have corrected my mistake. 
--- I forgot to add the where statement which would ensure that only the columns with crypto written differently would be updated
+-- I forgot to add the where statement which would ensure that only the columns with crypto written differently would be update
 
 SELECT DISTINCT location 
 FROM layoffs_staging22
@@ -185,7 +185,7 @@ WHERE location Like '%sseldorf';
 SELECT DISTINCT location
 From layoffs_staging22 
 ORDER BY 1;
--- it updated correctly. However, I found an issue with the spelling of Florianopolis too
+-- it updated correct. However, i found an issue with the spelling of Florianopolis
 
 SELECT DISTINCT location
 From layoffs_staging22 
@@ -223,7 +223,7 @@ WHERE country LIKE 'United States%';
 SELECT `date`
 FROM layoffs_staging22
 ;
--- Converting our date column from string to date data type
+-- COnverting our date column from string to date data type
 
 UPDATE layoffs_staging22 
 SET date = STR_TO_DATE(`date`, '%m/%d/%Y');
@@ -243,7 +243,7 @@ AND percentage_laid_off IS NULL;
 UPDATE layoffs_staging22
 SET industry = NULL 
 WHERE industry = '';
--- Setting everything to null to make it easier to populate the empty fields 
+-- Setting everything to null to make it easier to populate them empty fields 
 
 SELECT *
 FROM layoffs_staging22
@@ -263,7 +263,6 @@ JOIN layoffs_staging22 AS st2
     AND st1.location = st2.location 
 WHERE (st1.industry IS NULL OR st1.industry = '')
 AND st2.industry IS NOT NULL;
--- This will self-join the table which will allow me to allign the data to the null data and it will make it possible for me to fill in the missing data.   
 
 UPDATE layoffs_staging22 st1
 JOIN layoffs_staging22 st2
@@ -271,8 +270,7 @@ JOIN layoffs_staging22 st2
 SET st1.industry = st2.industry 
 WHERE st1.industry IS NULL 
 AND st2.industry IS NOT NULL;
--- Now Airbnb industry has been populated with data 
--- because I took the data from st2.industry and i moved into the position of the null data of st1.industry
+-- Now Airbnb industry has been populated with data
 
 -- 4. REMOVE ANY COLUMNS/ROWS OR IRRELEVANT DATA
 SELECT * 
@@ -294,15 +292,74 @@ FROM layoffs_staging22;
 
 
 ALTER TABLE layoffs_staging22 
-DROP COLUMN row_num;
+DROP COLUMN row_num; 
+--------------------------------------------------------------------------------------------
+ -- REMOVING DUPLICATES FROM TABLE. FINAL TABLE IS layoffs_staging3
+ 
+ SELECT * 
+ FROM layoffs_staging22; 
+ 
+   SELECT *,
+  ROW_NUMBER() OVER(
+  PARTITION BY company, location, industry, total_laid_off, percentage_laid_off, `date`, stage, country, funds_raised_millions) AS row_num
+ FROM layoffs_staging22;
+ 
+ WITH duplicate_cte AS 
+ (
+ SELECT *,
+  ROW_NUMBER() OVER(
+  PARTITION BY company, location, industry, total_laid_off, percentage_laid_off, `date`,
+  stage, country, funds_raised_millions) AS row_num
+ FROM layoffs_staging22
+ )
+ 
+ SELECT * 
+ FROM duplicate_cte 
+ WHERE row_num > 1; 
+ -- we will add a row number so that we can identify duplicates
+ 
+ CREATE TABLE `layoffs_staging3` (
+  `company` text,
+  `location` text,
+  `industry` text,
+  `total_laid_off` int DEFAULT NULL,
+  `percentage_laid_off` text,
+  `date` date DEFAULT NULL,
+  `stage` text,
+  `country` text,
+  `funds_raised_millions` int DEFAULT NULL, 
+  `row_num` int DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
+ SELECT*
+ FROM layoffs_staging3
+ ;
+ 
+ INSERT INTO layoffs_staging3
+SELECT *,
+  ROW_NUMBER() OVER(
+  PARTITION BY company, location, industry, total_laid_off, percentage_laid_off, `date`,
+  stage, country, funds_raised_millions) AS row_num
+ FROM layoffs_staging22; 
+ 
+ SELECT * 
+ FROM layoffs_staging3 
+ WHERE row_num > 1
+ ;
+-- Confirmed Duplicates 
 
+DELETE
+FROM layoffs_staging3 
+WHERE row_num > 1
+; 
+-- Deleted Duplicates
 
+SELECT * 
+FROM layoffs_staging3 
+;
 
-
-
-
-
+ALTER TABLE layoffs_staging3 
+DROP COLUMN row_num; 
 
 
 
